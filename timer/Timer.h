@@ -6,6 +6,7 @@
 #define ASYNC_TIMER_H
 
 #include "TimerDesc.h"
+#include <memory>
 
 namespace async {
     namespace timer {
