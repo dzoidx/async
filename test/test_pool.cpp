@@ -31,6 +31,32 @@ TEST(pool_test, default_pool_test)
 
 }
 
+TEST(pool_test, default_pool_queueing_test)
+{
+    const int concurrencyLvl = std::thread::hardware_concurrency();
+    const int jobsCount = concurrencyLvl * 10;
+    auto jobsDone = 0;
+    std::mutex listLock;
+    std::set<std::thread::id> threadIDs;
+    {
+        async::pool::ThreadPool pool(concurrencyLvl);
+
+        for (auto i = 0; i < jobsCount; ++i) {
+            pool.AddJob([&] {
+                std::unique_lock<std::mutex> lock(listLock);
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                auto threadId = std::this_thread::get_id();
+                ++jobsDone;
+                threadIDs.insert(threadId);
+            });
+        }
+    }
+
+    EXPECT_EQ(jobsCount, jobsDone);
+    EXPECT_EQ(concurrencyLvl, threadIDs.size());
+
+}
+
 TEST(pool_test, cached_pool_spawn_workers_test)
 {
     const int concurrencyLvl = std::thread::hardware_concurrency();
