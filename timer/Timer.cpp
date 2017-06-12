@@ -1,22 +1,23 @@
 //
-// Created by morgan on 08.06.2017.
+// Created by morgan on 12.06.2017.
 //
 
+#include "TimerQueue.h"
 #include "Timer.h"
 
-namespace async_timer
-{
+namespace async {
+    namespace timer {
 
-    Timer::Timer(TimecCbc callback, unsigned int dueTime, unsigned int period)
-    {
-        callback_ = callback;
-        period_ = std::chrono::milliseconds(period);
-        auto delay = std::chrono::milliseconds(dueTime);
-        next_ = Clock::now() + delay;
-    }
+        Timer::Timer(TimerCbc callback, unsigned int dueTime, unsigned int period)
+        {
+            timerDesc_.reset(new TimerDesc(callback, dueTime, period));
+            DefaultTimerQueue.RegisterTimer(timerDesc_);
+        }
 
-    void Timer::Reset()
-    {
-        next_ = Clock::now() + period_;
+        Timer::~Timer()
+        {
+            DefaultTimerQueue.UnregisterTimer(timerDesc_);
+        }
+
     }
 }

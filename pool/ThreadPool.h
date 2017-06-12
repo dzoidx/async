@@ -7,22 +7,24 @@
 
 #include "Worker.h"
 
-namespace async_pool
-{
-    using WorkersList = std::vector<Worker>;
+namespace async {
+    namespace pool {
+        using WorkersList = std::vector<std::unique_ptr<Worker>>;
 
-    class ThreadPool
-    {
-    public:
-        ThreadPool(int concurrencyLevel);
-        ~ThreadPool();
-        void AddJob(Job job);
+        class ThreadPool {
+        public:
+            ThreadPool(int concurrencyLevel);
 
-    private:
-        WorkersList workers_;
-        std::mutex mutex_;
-    };
+            virtual ~ThreadPool();
 
+            virtual void AddJob(Job job);
+            int GetConcurrencyLevel() { return workers_.size(); }
+
+        protected:
+            WorkersList workers_;
+            std::mutex mutex_;
+        };
+    }
 }
 
 #endif //ASYNC_THREADPOOL_H

@@ -5,26 +5,30 @@
 #include <algorithm>
 #include "ThreadPool.h"
 
-namespace async_pool
-{
-    ThreadPool::ThreadPool(int concurrencyLevel)
-    : workers_(concurrencyLevel)
-    {
-    }
+namespace async {
+    namespace pool {
 
-    ThreadPool::~ThreadPool()
-    {
-    }
-
-    void ThreadPool::AddJob(Job job)
-    {
-        if(!workers_.size()) {
-            job();
-            return;
+        ThreadPool::ThreadPool(int concurrencyLevel)
+        {
+            for(auto i = 0; i < concurrencyLevel; ++i)
+            {
+                workers_.push_back(std::unique_ptr<Worker>(new Worker()));
+            }
         }
 
-        std::unique_lock<std::mutex> lock(mutex_);
-        auto& w = *std::min_element(workers_.begin(), workers_.end(), [] (Worker& w1, Worker& w2) { return w1.JobsCount() < w2.JobsCount(); });
-        w.AddJob(job);
+        ThreadPool::~ThreadPool() {
+        }
+
+        void ThreadPool::AddJob(Job job) {
+            if (!workers_.size()) {
+                job();
+                return;
+            }
+
+            std::unique_lock<std::mutex> lock(mutex_);
+            auto &w = *std::min_element(workers_.begin(), workers_.end(),
+                                        [](std::unique_ptr<Worker> &w1, std::unique_ptr<Worker> &w2) { return (*w1).JobsCount() < (*w2).JobsCount(); });
+            (*w).AddJob(job);
+        }
     }
 }

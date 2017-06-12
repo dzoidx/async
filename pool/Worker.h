@@ -11,31 +11,37 @@
 #include <functional>
 #include <queue>
 #include <condition_variable>
+#include <chrono>
+#include "../Definitions.h"
 
-namespace async_pool {
+namespace async {
+    namespace pool {
 
-    using Job = std::function<void()>;
-    class Worker
-    {
-    public:
-        Worker();
-        ~Worker();
+        using Job = std::function<void()>;
 
-        void AddJob(Job job);
-        bool IsVacant() const { return vacant_; }
-        int JobsCount() const { return jobsQueue_.size();}
+        class Worker {
+        public:
+            Worker();
 
-    private:
-        void WorkerLoop();
-    private:
-        std::queue<Job> jobsQueue_;
-        std::atomic_bool vacant_;
-        std::atomic_bool running_;
-        std::thread thread_;
-        std::mutex mutex_;
-        std::condition_variable jobEvent_;
-    };
+            ~Worker();
 
+            void AddJob(Job job);
+
+            int JobsCount() const { return jobsQueue_.size(); }
+            Clock::time_point GetLastJobTime() const { return lastJobFinishTime_; }
+
+        private:
+            void WorkerLoop();
+
+        private:
+            std::queue<Job> jobsQueue_;
+            std::atomic_bool running_;
+            std::thread thread_;
+            std::mutex mutex_;
+            std::condition_variable jobEvent_;
+            Clock::time_point lastJobFinishTime_;
+        };
+    }
 }
 
 
