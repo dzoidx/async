@@ -79,7 +79,7 @@ void TestTimers()
 
 int main()
 {
-    TestTimers();
+    TestThreadPool();
 
 	char c;
 	std::cin >> c;

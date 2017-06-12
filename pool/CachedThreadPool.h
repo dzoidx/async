@@ -15,7 +15,7 @@ namespace async {
         {
         public:
             CachedThreadPool() : ThreadPool(0) {}
-            void AddJob(Job job) override;
+            bool AddJob(Job job) override;
 
         private:
             void CleanCache(WorkersList::iterator end);

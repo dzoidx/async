@@ -8,6 +8,7 @@ namespace async {
     namespace pool {
 
         Worker::Worker() {
+            running_ = true;
             lastJobFinishTime_ = Clock::now();
             thread_ = std::thread(&Worker::WorkerLoop, this);
         }
@@ -18,10 +19,15 @@ namespace async {
             thread_.join();
         }
 
-        void Worker::AddJob(Job job) {
+        bool Worker::AddJob(Job job) {
             std::unique_lock<std::mutex> lock(mutex_);
+            if(!running_)
+            {
+                return false;
+            }
             jobsQueue_.push(job);
             jobEvent_.notify_one();
+            return true;
         }
 
         void Worker::WorkerLoop() {
@@ -38,6 +44,13 @@ namespace async {
                     jobsQueue_.pop();
                 }
                 jobEvent_.wait(lock, [&] { return jobsQueue_.size() || !(bool) running_; });
+            }
+            // finish jobs on destroy
+            while (jobsQueue_.size())
+            {
+                auto &job = jobsQueue_.front();
+                job();
+                jobsQueue_.pop();
             }
 
         }

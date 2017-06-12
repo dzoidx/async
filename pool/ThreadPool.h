@@ -17,7 +17,7 @@ namespace async {
 
             virtual ~ThreadPool();
 
-            virtual void AddJob(Job job);
+            virtual bool AddJob(Job job);
             int GetConcurrencyLevel() { return workers_.size(); }
 
         protected:

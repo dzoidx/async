@@ -24,26 +24,28 @@ namespace async {
 
         void TimerQueue::TimerQueueLoop()
         {
-            std::unique_lock<std::mutex> lock(queueMutex_);
-            while (running_)
-            {
-                if(!timers_.size())
-                {
-                    queueLoopUpdate_.wait(lock);
-                }
-                else
-                {
-                    auto tn = SystemClock::now();
-                    auto nextWakeup = (*timers_.front()).GetNext() - tn;
-                    if(nextWakeup > nextWakeup.zero())
-                        queueLoopUpdate_.wait_until(lock, (*timers_.front()).GetNext());
-                }
+            if(!running_)
+                return;
 
-                if(running_) {
-                    TriggerTimers();
-                    SortTimers();
-                }
+            std::unique_lock<std::mutex> lock(queueMutex_);
+            if(!timers_.size())
+            {
+                queueLoopUpdate_.wait(lock);
             }
+            else
+            {
+                auto tn = SystemClock::now();
+                auto nextWakeup = (*timers_.front()).GetNext() - tn;
+                if(nextWakeup > nextWakeup.zero())
+                    queueLoopUpdate_.wait_until(lock, (*timers_.front()).GetNext());
+            }
+
+            if(running_) {
+                TriggerTimers();
+                SortTimers();
+            }
+
+            pool_.AddJob(std::bind(&TimerQueue::TimerQueueLoop, this));
         }
 
         void TimerQueue::RegisterTimer(std::shared_ptr<TimerDesc> timer)

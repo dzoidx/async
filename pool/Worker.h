@@ -25,7 +25,7 @@ namespace async {
 
             ~Worker();
 
-            void AddJob(Job job);
+            bool AddJob(Job job);
 
             int JobsCount() const { return jobsQueue_.size(); }
             Clock::time_point GetLastJobTime() const { return lastJobFinishTime_; }

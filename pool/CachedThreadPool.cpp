@@ -8,7 +8,7 @@
 namespace async {
     namespace pool {
 
-        void CachedThreadPool::AddJob(Job job)
+        bool CachedThreadPool::AddJob(Job job)
         {
             std::unique_lock<std::mutex> lock(mutex_);
             auto w = std::find_if(workers_.begin(), workers_.end(), [] (std::unique_ptr<Worker> &w) { return !(*w).JobsCount(); });
@@ -21,7 +21,7 @@ namespace async {
             {
                 CleanCache(w);
             }
-            (**w).AddJob(job);
+            return (**w).AddJob(job);
         }
 
         void CachedThreadPool::CleanCache(WorkersList::iterator end)
