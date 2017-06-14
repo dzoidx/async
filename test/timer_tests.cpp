@@ -23,6 +23,9 @@ TEST(timer_test, timer_cbk_test)
         std::this_thread::sleep_for(std::chrono::milliseconds(3000));
     }
 
-    EXPECT_TRUE(averageCallbackDelay[1] >= timer1ValidCountMin && averageCallbackDelay[1] <= timer1ValidCountMax);
-    EXPECT_TRUE(averageCallbackDelay[2] >= timer2ValidCountMin && averageCallbackDelay[2] <= timer2ValidCountMax);
+    EXPECT_GE(averageCallbackDelay[1], timer1ValidCountMin);
+    EXPECT_LE(averageCallbackDelay[1], timer1ValidCountMax);
+
+    EXPECT_GE(averageCallbackDelay[2], timer2ValidCountMin);
+    EXPECT_LE(averageCallbackDelay[2], timer2ValidCountMax);
 }

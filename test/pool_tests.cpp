@@ -18,7 +18,7 @@ TEST(pool_test, default_pool_test)
         for (auto i = 0; i < concurrencyLvl; ++i) {
             pool.AddJob([&] {
                 std::unique_lock<std::mutex> lock(listLock);
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 auto threadId = std::this_thread::get_id();
                 ++jobsDone;
                 threadIDs.insert(threadId);
@@ -44,7 +44,7 @@ TEST(pool_test, default_pool_queueing_test)
         for (auto i = 0; i < jobsCount; ++i) {
             pool.AddJob([&] {
                 std::unique_lock<std::mutex> lock(listLock);
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 auto threadId = std::this_thread::get_id();
                 ++jobsDone;
                 threadIDs.insert(threadId);
@@ -62,12 +62,14 @@ TEST(pool_test, cached_pool_spawn_workers_test)
     const int concurrencyLvl = std::thread::hardware_concurrency();
     std::atomic_int jobsDone;
     jobsDone.store(0);
+    std::mutex lok;
     std::set<std::thread::id> threadIDs;
     int poolConcurrencyLvl;
     {
         async::pool::CachedThreadPool pool;
         for (auto i = 0; i < concurrencyLvl; ++i) {
             pool.AddJob([&] {
+                std::unique_lock<std::mutex> lock(lok);
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 ++jobsDone;
                 threadIDs.insert(std::this_thread::get_id());
@@ -114,13 +116,13 @@ TEST(pool_test, cached_pool_destroy_workers_test)
         for (auto i = 0; i < hConcurrencyLvl; ++i) {
             pool.AddJob([&] {
                 std::unique_lock<std::mutex> lock(lok);
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 ++jobsDone;
                 threadIDs.insert(std::this_thread::get_id());
             });
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10 * hConcurrencyLvl * 2));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100 * hConcurrencyLvl * 2));
 
         poolConcurrencyLvl = pool.GetConcurrencyLevel();
     }
