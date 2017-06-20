@@ -5,7 +5,7 @@
 
 ### What is async? ###
 
-It's small lib which adds supports of thread pools and timers.
+It's a small lib which adds support of thread pools and timers.
 
 It implements:
 
