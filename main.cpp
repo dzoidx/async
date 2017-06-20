@@ -13,41 +13,47 @@
 std::mutex consoleLock;
 auto start = async::Clock::now();
 
-void DummyJob2(int count)
+void DummyJob(int count)
 {
     auto enterDTime = async::Clock::now() - start;
     auto threadId = std::this_thread::get_id();
     std::unique_lock<std::mutex> lock(consoleLock);
+
     std::cout << "Job " << count
               << " on thread " << threadId
-              << " delta " << std::chrono::duration_cast<std::chrono::milliseconds>(enterDTime).count()
+              //<< " delta " << std::chrono::duration_cast<std::chrono::milliseconds>(enterDTime).count()
               << std::endl;
-}
-
-void DummyJob()
-{
-	auto threadId = std::this_thread::get_id();
-	std::unique_lock<std::mutex> lock(consoleLock);
-	std::cout << "Job on thread " << threadId << std::endl;
 }
 
 void TestThreadPool()
 {
-    async::pool::ThreadPool pool(8);
+    int workersCount = std::thread::hardware_concurrency();
+    int jobsCount = workersCount * 2;
+    async::pool::ThreadPool pool(workersCount);
 
-    for (auto i = 0; i < 10; ++i)
+    std::cout << "WorkersCount = " << workersCount << std::endl;
+    std::cout << "JobsCount = " << jobsCount << std::endl;
+
+    for (auto i = 0; i < jobsCount; ++i)
     {
-        pool.AddJob(std::bind(DummyJob2, i));
+        pool.AddJob(std::bind(DummyJob, i));
     }
 }
 
 void TestCachedThreadPool()
 {
+    int logicalCoresCount = std::thread::hardware_concurrency();
+    int jobsCountFirst = logicalCoresCount * 2;
+    int jobsCountSecond = logicalCoresCount / 2;
     async::pool::CachedThreadPool pool;
 
-    for (auto i = 0; i < 10; ++i)
+    std::cout << "LogicalCoresCount = " << logicalCoresCount << std::endl;
+    std::cout << "JobsCountFirst = " << jobsCountFirst << std::endl;
+    std::cout << "JobsCountSecond = " << jobsCountSecond << std::endl;
+
+    for (auto i = 0; i < jobsCountFirst; ++i)
     {
-        pool.AddJob(std::bind(DummyJob2, i));
+        pool.AddJob(std::bind(DummyJob, i));
     }
 
     {
@@ -55,11 +61,12 @@ void TestCachedThreadPool()
         std::cout << "Pool concurrency level is " << pool.GetConcurrencyLevel() << std::endl;
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    //ensure some workers are expired
+    std::this_thread::sleep_for(std::chrono::milliseconds(async::pool::WorkerDestroyDelay + 100));
 
-    for (auto i = 0; i < 5; ++i)
+    for (auto i = 0; i < jobsCountSecond; ++i)
     {
-        pool.AddJob(std::bind(DummyJob2, i));
+        pool.AddJob(std::bind(DummyJob, i));
     }
 
     {
@@ -70,20 +77,16 @@ void TestCachedThreadPool()
 
 void TestTimers()
 {
-    async::timer::Timer t1(std::bind(DummyJob2, 1), 500, 800);
-    async::timer::Timer t2(std::bind(DummyJob2, 2), 0, 1500);
-    //async::timer::Timer t3(std::bind(DummyJob2, 3), 100, 100);
+    async::timer::Timer t1(std::bind(DummyJob, 1), 500, 100); // wait 500 ms and then fire each 100 ms
+    async::timer::Timer t2(std::bind(DummyJob, 2), 0, 1500); // nowait, fire each 1,5 sec
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 }
 
 int main()
 {
-    TestThreadPool();
+    TestCachedThreadPool();
 
-	char c;
-	std::cin >> c;
-
-    return 0;
+    system("pause");
 }
 
