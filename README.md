@@ -14,8 +14,7 @@ It implements:
 ### Using ThreadPool ###
 
 
-```
-#!c++
+```c++
 
 std::mutex consoleLock;
 auto start = async::Clock::now();
@@ -69,8 +68,7 @@ Job 10 on thread 5
 
 ### Using Timer ###
 
-```
-#!c++
+```c++
 std::mutex consoleLock;
 auto start = async::Clock::now();
 
@@ -124,8 +122,7 @@ Job 1 on thread 3 delta 2919
 ```
 ### Using CachedThreadPool ###
 
-```
-#!c++
+```c++
 std::mutex consoleLock;
 auto start = async::Clock::now();
 
