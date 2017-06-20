@@ -1,5 +1,7 @@
 # async - minimalistic threading extension for C++11 and above #
 
+[![Join the chat at https://gitter.im/dzoidx-async/Lobby](https://badges.gitter.im/dzoidx-async/Lobby.svg)](https://gitter.im/dzoidx-async/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 
 ### What is async? ###
 
