@@ -17,7 +17,6 @@ It implements:
 ```c++
 
 std::mutex consoleLock;
-auto start = async::Clock::now();
 
 void DummyJob(int count)
 {
@@ -124,7 +123,6 @@ Job 1 on thread 3 delta 2919
 
 ```c++
 std::mutex consoleLock;
-auto start = async::Clock::now();
 
 void DummyJob(int count)
 {
@@ -156,7 +154,7 @@ int main()
         std::cout << "Pool concurrency level is " << pool.GetConcurrencyLevel() << std::endl;
     }
 
-    //ensure some workers are expired
+    // ensure workers are expired
     std::this_thread::sleep_for(std::chrono::milliseconds(async::pool::WorkerDestroyDelay + 100));
 
     for (auto i = 0; i < jobsCountSecond; ++i)
